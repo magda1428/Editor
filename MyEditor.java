@@ -1,35 +1,25 @@
 import java.awt.BorderLayout;
-import java.awt.Button;
+//import javax.swing.UIManager;
 import java.awt.Color;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-import java.awt.font.TextAttribute;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-
-import javax.swing.AbstractButton;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -49,20 +39,30 @@ public class MyEditor extends JFrame implements ReadAble,SaveAble {
 	 */
 	private static final long serialVersionUID = 1L;
 	private String filePath;
+	private String fileName;
+	private Font myFont = new Font("Courier", Font.PLAIN ,20);
 	private JTextArea textArea = new JTextArea(5, 20);
 	private JComboBox <String> fonty = new JComboBox<String>(fontsList());
 	private String kind;
 	private JToolBar toolbar;
+	private float fontSize=14;
 	
 	public MyEditor(){
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		
 		setTitle("Magda GEEK");
+		
+		//UIManager.put("InternalFrame.activeTitleBackground", new ColorUIResource(Color.black ));
+		//UIManager.put("InternalFrame.activeTitleForeground", new ColorUIResource(Color.WHITE));
+		//UIManager.put("InternalFrame.titleFont", new Font("Dialog", Font.BOLD, 11));
+
 		JScrollPane scrollPane = new JScrollPane(textArea); 
 		textArea.setEditable(true);
 		scrollPane.setPreferredSize(new Dimension(700,500));
 		setJMenuBar(makeMenuBar());
 		add(scrollPane,BorderLayout.CENTER);
 		add(makeToolBar(),BorderLayout.NORTH);
+		//StyledDocument doc = textArea.getStyledDocument();
 		
 		
 		addWindowListener(new java.awt.event.WindowAdapter() {
@@ -78,9 +78,11 @@ public class MyEditor extends JFrame implements ReadAble,SaveAble {
 		    }
 		});
 		pack();
+		repaint();
 		setLocationRelativeTo(null);
 		setVisible(true);//NA KONCU!!!
 	}
+	
 	
   private JToolBar makeToolBar(){
 	  
@@ -121,6 +123,7 @@ public class MyEditor extends JFrame implements ReadAble,SaveAble {
 		public void itemStateChanged(ItemEvent f1) {
 			// TODO Auto-generated method stub
 			kind=fonty.getSelectedItem().toString();
+			//myFont=new Font(kind,,fontsize);
 			textArea.setFont(Font.decode(kind));
 		}
 	});
@@ -204,43 +207,93 @@ public class MyEditor extends JFrame implements ReadAble,SaveAble {
 		open.addActionListener(e->//domyslny katalog
 		
 		{
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "geek");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Geek Files *.geek", "geek");
 		JFileChooser chooser=new JFileChooser();
 		chooser.setFileFilter(filter);
 		chooser.showOpenDialog(MyEditor.this);
 		
-		int option=chooser.showOpenDialog(null);
 		
-		if(option==JFileChooser.APPROVE_OPTION){//jesli wybrano sciezke
-			System.out.println(chooser.getSelectedFile());//wypisuje sciezke
-			   try {
-				    filePath= chooser.getSelectedFile().getPath();
-					String content=readFile(filePath);	
-					textArea.setText(content);
-				} catch (IOException e1) {
-					e1.printStackTrace();
+		
+		
+			while(true){
+				int option=chooser.showOpenDialog(null);
+				
+				if(option==JFileChooser.APPROVE_OPTION){//jesli wybrano sciezke
+					boolean exists = (new File(chooser.getSelectedFile().getPath())).exists();
+					if (option==JFileChooser.CANCEL_OPTION){
+						break;
+					}
+					
+					if (exists) {
+					   if(!chooser.getSelectedFile().getPath().endsWith(".geek")){
+						    String error = "You can select only geek files";
+				            JOptionPane.showMessageDialog(this, error, "Wrong type of file", JOptionPane.INFORMATION_MESSAGE);
+							chooser=new JFileChooser();
+							chooser.setFileFilter(filter);
+							chooser.showOpenDialog(MyEditor.this);
+					   }
+					   else{
+					   try {
+						    filePath= chooser.getSelectedFile().getPath();
+							String content=readFile(filePath);	
+							textArea.setText(content);
+							break;
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					   }
+				   
+					}
+					else{
+						String error = "Directory doesn't exist";
+			            JOptionPane.showMessageDialog(this, error, "Wrong type of file", JOptionPane.INFORMATION_MESSAGE);
+						chooser=new JFileChooser();
+						chooser.setFileFilter(filter);
+						chooser.showOpenDialog(MyEditor.this);
+					}
+					
 				}
-			
-		}	
+				else{
+					break;
+				}
+		}
 		});
 		
 		saveAs.addActionListener(e->//domyslny katalog
 		{
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Text Files", "geek");
+		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Geek Files *.geek", "geek");
 		JFileChooser chooser=new JFileChooser();
-		chooser.showSaveDialog(MyEditor.this);	
-		chooser.setFileFilter(filter);
-		setFilePath(chooser.getSelectedFile().getPath());
-		SaveAsFile(filePath,textArea.getText());
-		
-		
-
+		int option = chooser.showOpenDialog(chooser);
+		switch (option){
+		case JFileChooser.APPROVE_OPTION:
+			chooser.showSaveDialog(MyEditor.this);	
+			chooser.setFileFilter(filter);
+			try{
+				setFilePath(chooser.getSelectedFile().getPath());
+				setFileName(chooser.getSelectedFile().getName());
+				SaveAsFile(filePath,textArea.getText());
+				setTitle("Magda Geek "+fileName);
+				}
+			catch(java.lang.NullPointerException b) {
+				String error = "Error, Please save file as geek file";
+	            JOptionPane.showMessageDialog(this, error, "Wrong type of file", JOptionPane.INFORMATION_MESSAGE);
+	            chooser = new JFileChooser();
+	            chooser.showSaveDialog(MyEditor.this);	
+				chooser.setFileFilter(filter);	
+			}
+			break;
+		case JFileChooser.ERROR_OPTION:
+			System.out.println("error");
+			break;
+		}
 		});
 		
 		save.addActionListener(e->//domyslny katalog
 		{
 			SaveFile(filePath,textArea.getText());
 		});
+		setVisible(true);
 		return menuBar;
 		
 	}
@@ -252,6 +305,14 @@ public class MyEditor extends JFrame implements ReadAble,SaveAble {
 
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
+	}
+	
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 	
 	public String[] fontsList(){
@@ -277,6 +338,10 @@ public class MyEditor extends JFrame implements ReadAble,SaveAble {
 	      });
 	      return spinner;  
 	   } 
+	  
+	  
+
+	  
 	  
 
 
