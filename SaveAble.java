@@ -8,10 +8,7 @@ public interface SaveAble {
 		
 	     try {
 	            File newTextFile = new File(filepath);
-
 	            FileWriter fw = new FileWriter(newTextFile);
-	            System.out.println(content);
-	            System.out.println("nanana");
 	            fw.write(content);
 	            fw.close();
 
