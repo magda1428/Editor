@@ -16,7 +16,8 @@ public class MyEditor extends JFrame {
 
 	//**************************************************//
 
-	
+
+
 	public MyEditor(){
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		
@@ -52,6 +53,15 @@ public class MyEditor extends JFrame {
 		repaint();
 		setLocationRelativeTo(null);
 		setVisible(true);//NA KONCU!!!
+	}
+	
+	
+	public JTextArea getTextArea() {
+		return textArea;
+	}
+
+	public void setTextArea(JTextArea textArea) {
+		this.textArea = textArea;
 	}
 	
 }

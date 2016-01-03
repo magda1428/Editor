@@ -2,6 +2,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -54,23 +55,29 @@ public class MenuBar extends JMenuBar implements ReadAble,SaveAble {
 		{
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Geek Files *.geek", "geek");
 		JFileChooser chooser=new JFileChooser();
-		chooser.setFileFilter(filter);
-		chooser.showOpenDialog(Main.editor);
-		
-		
+		chooser.setFileFilter(filter);	
 		
 		
 			while(true){
-				int option=chooser.showOpenDialog(null);
+				int option=chooser.showOpenDialog(Main.editor);
 				
 				if(option==JFileChooser.APPROVE_OPTION){//jesli wybrano sciezke
-					boolean exists = (new File(chooser.getSelectedFile().getPath())).exists();
+					filePath=chooser.getSelectedFile().getPath();
+					
+					if (filePath.split("\\.").length==1){
+						StringJoiner joiner = new StringJoiner("");
+		    	 		joiner.add(filePath);
+		    	 		joiner.add(".geek");
+		    	 		filePath=joiner.toString();
+					}
+					
+					boolean exists = (new File(filePath)).exists();
 					if (option==JFileChooser.CANCEL_OPTION){
 						break;
 					}
 					
 					if (exists) {
-					   if(!chooser.getSelectedFile().getPath().endsWith(".geek")){
+					   if(!filePath.endsWith(".geek")){
 						    String error = "You can select only geek files";
 				            JOptionPane.showMessageDialog(this, error, "Wrong type of file", JOptionPane.INFORMATION_MESSAGE);
 							chooser=new JFileChooser();
@@ -79,7 +86,6 @@ public class MenuBar extends JMenuBar implements ReadAble,SaveAble {
 					   }
 					   else{
 					   try {
-						    filePath= chooser.getSelectedFile().getPath();
 							String content=readFile(filePath);	
 							textArea.setText(content);
 							break;
@@ -106,37 +112,19 @@ public class MenuBar extends JMenuBar implements ReadAble,SaveAble {
 		
 		saveAs.addActionListener(e->//domyslny katalog
 		{
+			saveAsF();
 		
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("Geek Files *.geek", "geek");
-		JFileChooser chooser=new JFileChooser();
-		int option = chooser.showOpenDialog(chooser);
-		switch (option){
-		case JFileChooser.APPROVE_OPTION:
-			chooser.showSaveDialog(Main.editor);	
-			chooser.setFileFilter(filter);
-			try{
-				setFilePath(chooser.getSelectedFile().getPath());
-				setFileName(chooser.getSelectedFile().getName());
-				SaveAsFile(filePath,textArea.getText());
-				Main.editor.setTitle("Magda Geek "+fileName);
-				}
-			catch(java.lang.NullPointerException b) {
-				String error = "Error, Please save file as geek file";
-	            JOptionPane.showMessageDialog(this, error, "Wrong type of file", JOptionPane.INFORMATION_MESSAGE);
-	            chooser = new JFileChooser();
-	            chooser.showSaveDialog(Main.editor);	
-				chooser.setFileFilter(filter);	
-			}
-			break;
-		case JFileChooser.ERROR_OPTION:
-			System.out.println("error");
-			break;
-		}
 		});
 		
 		save.addActionListener(e->//domyslny katalog
 		{
-			SaveFile(filePath,textArea.getText());
+			try{
+				SaveFile(filePath,textArea.getText());
+			}
+			catch(java.lang.NullPointerException e1){
+				saveAsF();
+				
+			}
 		});
 		setVisible(true);
 	}
@@ -155,6 +143,37 @@ public class MenuBar extends JMenuBar implements ReadAble,SaveAble {
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+	}
+	
+	public void saveAsF(){
+		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("*.geek", "geek");
+		JFileChooser chooser=new JFileChooser();
+		chooser.setFileFilter(filter);
+		int option = chooser.showSaveDialog(Main.editor);
+		
+		switch (option){
+		case JFileChooser.APPROVE_OPTION:	
+			
+			try{
+				setFilePath(chooser.getSelectedFile().getPath());
+				setFileName(chooser.getSelectedFile().getName());
+				SaveAsFile(filePath,textArea.getText());
+				//Main.editor.setTitle("Magda Geek "+fileName);
+				}
+			catch(java.lang.NullPointerException b) {
+				String error = "Error, Please save file as geek file";
+	            JOptionPane.showMessageDialog(this, error, "Wrong type of file", JOptionPane.INFORMATION_MESSAGE);
+	            chooser = new JFileChooser();
+	            chooser.showSaveDialog(Main.editor);	
+				chooser.setFileFilter(filter);	
+			}
+			break;
+		case JFileChooser.ERROR_OPTION:
+			System.out.println("error");
+			break;
+		}
+		
 	}
 
 }

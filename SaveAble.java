@@ -1,13 +1,22 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 public interface SaveAble {
 	
 	public default void SaveAsFile(String filepath,String content){
 		
 	     try {
-	            File newTextFile = new File(filepath);
+	    	 	if (!filepath.endsWith(".geek")){
+	    	 		StringJoiner joiner = new StringJoiner("");
+	    	 		joiner.add(filepath);
+	    	 		joiner.add(".geek");
+	    	 		filepath=joiner.toString();
+
+	    	 	}
+
+	    	 	File newTextFile = new File(filepath);
 	            FileWriter fw = new FileWriter(newTextFile);
 	            fw.write(content);
 	            fw.close();
@@ -21,7 +30,14 @@ public interface SaveAble {
 	
 	public default void SaveFile(String filepath,String content){
 		
-	     try {
+	     try {	
+	    	   if (!filepath.endsWith(".geek")){
+	    	 		StringJoiner joiner = new StringJoiner("");
+	    	 		joiner.add(filepath);
+	    	 		joiner.add(".geek");
+	    	 		filepath=joiner.toString();
+
+	    	 	}
 
 
 	            FileWriter fw = new FileWriter(filepath);
